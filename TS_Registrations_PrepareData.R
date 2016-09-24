@@ -61,8 +61,7 @@ DF_adjusted$Class <-rep(Classes_Rep,Vec_Id_diff)
 # Remove the columns where Model = Class 
 DF_adjusted<- DF_adjusted[-which(trimws(DF_adjusted$Class)==trimws(DF_adjusted$Model)),]
 
-# Remove remnants of special characters in the Class-string
-DF_adjusted$Class<-sub("Ã","AE",DF_adjusted$Class)
+
 # Replace the "-"
 DF_adjusted$Class<-sub("-","_",DF_adjusted$Class)
 # Replace space with a "_" to avoid problems with naming
@@ -70,18 +69,19 @@ DF_adjusted$Class<-sub(" ","_",DF_adjusted$Class)
 # Define Quantity as numeric
 DF_adjusted$Quantity <-  as.numeric(DF_adjusted$Quantity)
 
-
 ########################
 # Now we are nearly done. We create 2 DF out of 'DF_adjusted'. One where we aggregate over the class (these
 # values are also available in the rows with the Model "Zusammen" (Combined)) - and one where we keep the
-# data at the Model level). These will be named DF_Class and DF_Model
+# data at the Model level). These will be named DF_Class and DF_Model.
 ########################
 
 
 # Aggregate to the the sum over classes
 DF_Class <-aggregate(Quantity ~ Year + Month + Class, data=DF_adjusted, FUN=sum)
 # Remove the class 'Sonstige', which is uninteresting
-DF_Class <-subset(DF_Class,trimws(DF_Class$Class) != "SONSTIGE")
+DF_Class <-subset(DF_Class,trimws(DF_Class$Class) != "OTHER_MODEL")
+# Order the DF
+DF_Class <-DF_Class[with(DF_Class, order(DF_Class$Class, DF_Class$Year,DF_Class$Month)),]
 
 # Adjust the df and remove the rows with "Zusammen" (they give the sum over a class)
 DF_Model<- subset(DF_adjusted,trimws(DF_adjusted$Class) != "ZUSAMMEN")
@@ -90,12 +90,13 @@ DF_Model<- subset(DF_adjusted,trimws(DF_adjusted$Class) != "ZUSAMMEN")
 # Finally, we save the data to .csv file
 ########################
 
-write.csv(DF_Class, file="C:/Users/FloM/Desktop/git/DF_Class.csv")
-write.csv(DF_Model, file="C:/Users/FloM/Desktop/git/DF_Model.csv")
+write.csv(DF_Class, file="C:/Users/FloM/Desktop/R_BASE/DF_Class.csv")
+write.csv(DF_Model, file="C:/Users/FloM/Desktop/R_BASE/DF_Model.csv")
 
 
 ########################
 # Final note: When taking a closer look at the data, it becomes apparent that SUVs exist as a seperate class only
 # from 01/2013 onwards. Before, they were part of the class 'GELAENDEWAGEN'. 
 # This causes  a structural break in the TS of the latter.
+# In the following, we will use the DF_CLASS DF for our analysis.
 ########################

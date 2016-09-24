@@ -12,12 +12,12 @@
 library(xlsx)
 
 # Set the dates
-iYearStart = 2011
-iMonthStart= 1
-iYearEnd = 2016
-iMonthEnd = 6
+YearStart = 2011
+MonthStart= 1
+YearEnd = 2016
+MonthEnd = 6
 
-# Set the baseline URL - use placeholders for months (MONTH) and years (YEAR)
+# Set the baseline URL - use placeholders for months (MONTH) and years (YEAR): It is the website from the Federal Motor Transport Authority (KBA).
 Url_temp <-"http://www.kba.de/SharedDocs/Publikationen/DE/Statistik/Fahrzeuge/FZ/YEAR_monatlich/FZ11/fz11_YEAR_MONTH_xls.xls?__blob=publicationFile&v=6"
 Year_temp <- "YEAR"
 Month_temp <- "MONTH"
@@ -26,15 +26,15 @@ Month_temp <- "MONTH"
 Folder <- "C:/Users/FloM/Desktop/R_Base"
 
 # Years to evaluate - 2011 to 2015
-Years_L <-rep(seq(iYearStart,iYearEnd),12)
+Years_L <-rep(seq(YearStart,YearEnd-1),12)
 # Add first last six months of 2016
-Years_L <- c(Years_L,rep(iYearEnd,iMonthEnd))
+Years_L <- c(Years_L,rep(YearEnd,MonthEnd))
 Years_L <-as.character(sort(Years_L))
 
 
 # Create a corresponding list with months
-Months_L <-rep((seq(1,12)),iYearEnd-iYearStart)
-Months_L <- c(Months_L,seq(1,iMonthEnd))
+Months_L <-rep((seq(1,12)),YearEnd-YearStart)
+Months_L <- c(Months_L,seq(1,MonthEnd))
 # Add a lead 0 (necessary for the URL)
 Months_L <- ifelse(Months_L < 10, paste0("0",Months_L),Months_L)
 
@@ -42,7 +42,7 @@ Months_L <- ifelse(Months_L < 10, paste0("0",Months_L),Months_L)
 DF_Structure <- data.frame(Model=as.character(),Quantity=as.character(),Year=as.character(),Month = as.character())
 
 
-# Define the function for the download the excel files from the website.
+# Define the function for the download the excel files from the website of the 
 Download <- function(Year,Month,Url_temp,Year_temp,Month_temp,FileLocation) {
   
   # Define the string for the URL
@@ -76,6 +76,24 @@ List_Data <-mapply(Download,Years_L,Months_L,Url_temp,Year_temp,Month_temp,Folde
 
 # Create a dataframe - it will have the following columns: Model, Quantity(New Registrations), Year , Month 
 DF_Unedited <- do.call(rbind, lapply(List_Data,data.frame,stringsAsFactors=FALSE))
+
+
+# Generate translations of the classes (they are at this moment integrated in the "Model" column)
+DF_Unedited$Model <- ifelse(trimws(DF_Unedited$Model) == "KLEINWAGEN", "SMALL_CARS",DF_Unedited$Model)
+DF_Unedited$Model<- ifelse(trimws(DF_Unedited$Model) == "KOMPAKTKLASSE", "COMPACT_CARS",DF_Unedited$Model)
+DF_Unedited$Model<- ifelse(trimws(DF_Unedited$Model) == "MITTELKLASSE", "MIDSIZE_CARS",DF_Unedited$Model)
+DF_Unedited$Model<- ifelse(trimws(DF_Unedited$Model) == "OBERE MITTELKLASSE", "EXECUTIVE_CARS",DF_Unedited$Model)
+DF_Unedited$Model<- ifelse(trimws(DF_Unedited$Model) == "OBERKLASSE", "LUXURY_VEHICLES",DF_Unedited$Model)
+DF_Unedited$Model<- ifelse(trimws(DF_Unedited$Model) == "SPORTWAGEN", "SPORTS_CARS",DF_Unedited$Model)
+DF_Unedited$Model<- ifelse(trimws(DF_Unedited$Model) == "MINI-VANS", "MINI_VANS",DF_Unedited$Model)
+DF_Unedited$Model<- ifelse(trimws(DF_Unedited$Model) == "GROSSRAUM-VANS", "LARGE_VANS",DF_Unedited$Model)
+DF_Unedited$Model<- ifelse(trimws(DF_Unedited$Model) == "WOHNMOBILE", "RVs",DF_Unedited$Model)
+# ifelse has some issues when special characters are in play, therefore we remove them first in this case
+DF_Unedited$Model<- ifelse(trimws(gsub('Ã"','AE',DF_Unedited$Model)) == "GELAENDEWAGEN", "OFFROAD_VEHICLE",DF_Unedited$Model)
+# Translate "SONSTIGE": "Other Models" that are included in a class but not expicitly counted
+DF_Unedited$Model<- ifelse(trimws(DF_Unedited$Model) == "SONSTIGE", "OTHER_MODEL",DF_Unedited$Model)
+
+
 
 # Reset rownames and other objects
 rownames(DF_Unedited) <- NULL
