@@ -10,6 +10,7 @@ library(mgcv)
 library(RCurl)
 options(scipen=999)
 
+# Load the data from my github
 Data <- getURL("https://raw.githubusercontent.com/FM2805/WDI_Analysis/Development/WDIData_Prepared.csv")
 Data <- read.csv(text = Data)
 Data$X <- NULL
@@ -197,7 +198,7 @@ GLM_Pred[GLM_Prob > .5] <- "Rich"
 # What is the test error?
 table(GLM_Pred,Realization)
 mean(GLM_Pred==Realization)
-# Test error of 17%.
+# The test error is 17%
 
 ########################
 # We have now constructed a model that allows us to classify the countries in "rich" and "poor". It does a rather
