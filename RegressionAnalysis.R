@@ -45,7 +45,7 @@ summary(OLS)
 # girls boys ratio    -> negative impact (the more girls in primary enrolement compared to boys, the higher is the life expectancy)
 # We see from the factor variables that the average life expectancy increased over the years (baseline is 2000) and
 # that the life expectancy in South Asia and Subsahran Africa is signifcantly lower than in the baseline region (East Asia & Pacific)
-# R² of 80%
+# RÂ² of 80%
 
 
 # Lets perform some diagnostics
@@ -85,7 +85,7 @@ GAM_1 <- gam(Life.Exp ~ s(Adol.Fertility) + s(Educ.Exp) + s(Health.Exp) +
                s(GirlsBoys.Ratio) + s(log(Total.Pop)) +region + factor(year) , data= Data_Robust, method="GACV.Cp")
 
 summary(GAM_1) 
-# We obtain a rather high R² with 87%.
+# We obtain a rather high RÂ² with 87%.
 
 # Visualize the model
 par(mfrow=c(2,2))
@@ -109,7 +109,7 @@ GAM_2 <- gam(Life.Exp~ s(Adol.Fertility, bs="cr", k=15) + s(GirlsBoys.Ratio, bs=
                s(Health.Exp, bs="cr", k=15) + s(log(Total.Pop),bs="cr", k=15) + factor(year) + region, data= Data_Robust, method="GACV.Cp")
 
 summary(GAM_2)
-# R² of 88%. Somewhat better
+# RÂ² of 88%. Somewhat better
 
 #Diagnostics
 gam.check(GAM_2)
@@ -194,12 +194,12 @@ GLM_Prob <- predict(GLM,newdata=Test, type="response")
 GLM_Pred <-rep("Poor",dim(Test)[1])  
 GLM_Pred[GLM_Prob > .5] <- "Rich"
 
-# What is the training error?
+# What is the test error?
 table(GLM_Pred,Realization)
 mean(GLM_Pred==Realization)
-# Training error of 17%.
+# Test error of 17%.
 
 ########################
 # We have now constructed a model that allows us to classify the countries in "rich" and "poor". It does a rather
-# good job, with a training error rate of 17%.
+# good job, with a test error of 17%.
 ########################
